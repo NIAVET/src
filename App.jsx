@@ -10,22 +10,27 @@ function App() {
   const [message, setMessage] = useState('');
   
   const [screen, setScreen] = useState('menu'); 
-  const [hasSaved, setHasSaved] = useState(false); // Empêche de sauvegarder 2 fois
+  const [hasSaved, setHasSaved] = useState(false);
   
   const startTime = useRef(null);
   const [reactionTimes, setReactionTimes] = useState([]);
   const [history, setHistory] = useState([]);
 
+  // PROTECTION POUR MOBILE : On entoure le localStorage d'un "try/catch"
   useEffect(() => {
-    const savedHistory = JSON.parse(localStorage.getItem('dystrack_history')) || [];
-    setHistory(savedHistory);
+    try {
+      const savedHistory = JSON.parse(localStorage.getItem('dystrack_history')) || [];
+      setHistory(savedHistory);
+    } catch (error) {
+      console.warn("Le stockage local est bloqué sur cet appareil.", error);
+      setHistory([]); // On continue sans historique
+    }
   }, []);
 
-  // Mots adaptés : CE1 = syllabes courtes, CM2 = mots max 6 lettres
   const levelsConfig = {
     CP: { title: "Niveau CP", pool: ['b', 'd', 'p', 'q'] },
     CE1: { title: "Niveau CE1", pool: ['ba', 'da', 'pa', 'bo', 'do', 'po'] },
-    CM2: { title: "Niveau CM2", pool: ['bord', 'dord', 'port', 'balle', 'palle', 'bille', 'dalle', 'pelle'] }
+    CM2: { title: "Niveau CM2", pool: ['bord', 'port', 'balle', 'pelle', 'dalle', 'bille', 'dauphin', 'poussin'] }
   };
 
   const playSound = (text) => {
@@ -92,7 +97,7 @@ function App() {
   };
 
   const saveResults = () => {
-    if (hasSaved) return; // Sécurité
+    if (hasSaved) return;
     
     const averageTime = reactionTimes.length > 0 
       ? (reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length).toFixed(2) 
@@ -107,10 +112,14 @@ function App() {
 
     const updatedHistory = [newSession, ...history];
     setHistory(updatedHistory);
-    localStorage.setItem('dystrack_history', JSON.stringify(updatedHistory));
+    
+    try {
+      localStorage.setItem('dystrack_history', JSON.stringify(updatedHistory));
+    } catch (error) {
+      console.warn("Impossible de sauvegarder.", error);
+    }
     
     setHasSaved(true);
-    alert("Résultats sauvegardés !");
     setScreen('dashboard');
   };
 
