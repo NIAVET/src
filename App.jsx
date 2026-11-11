@@ -16,14 +16,14 @@ function App() {
   const [reactionTimes, setReactionTimes] = useState([]);
   const [history, setHistory] = useState([]);
 
-  // PROTECTION POUR MOBILE : On entoure le localStorage d'un "try/catch"
+  // PROTECTION MOBILE : Empêche le crash si le téléphone bloque la mémoire
   useEffect(() => {
     try {
       const savedHistory = JSON.parse(localStorage.getItem('dystrack_history')) || [];
       setHistory(savedHistory);
     } catch (error) {
-      console.warn("Le stockage local est bloqué sur cet appareil.", error);
-      setHistory([]); // On continue sans historique
+      console.warn("Stockage local bloqué.", error);
+      setHistory([]);
     }
   }, []);
 
